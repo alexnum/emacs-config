@@ -9,7 +9,8 @@
  '(inhibit-startup-screen t)
  '(menu-bar-mode nil)
  '(package-selected-packages
-   '(company company-go company-web python-mode vue-mode auto-complete csharp-mode csproj-mode csv-mode js2-mode tern tern-auto-complete ibuffer-sidebar neotree))
+   '(lsp-mode tide rjsx-mode typescript-mode auctex company company-go company-web python-mode vue-mode auto-complete csharp-mode csproj-mode csv-mode js2-mode tern tern-auto-complete ibuffer-sidebar neotree))
+ '(safe-local-variable-values '((indent-tabs-mode . true)))
  '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -119,5 +120,38 @@
 ;;Never use tabs
 (setq-default indent-tabs-mode nil)
 
+;;Show hidden files in neotree
+(setq-default neo-show-hidden-files t)
+
 ;;-------------Auto Init Mode--------------------
 (add-hook 'after-init-hook 'global-company-mode)
+
+;;-------Set Backup dir--------------
+(setq backup-directory-alist `(("." . "~/.saves")))
+
+;;configure ts
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (company-mode +1))
+
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+;; Use shopify-cli / theme-check-language-server for Shopify's liquid syntax
+
+
+(with-eval-after-load 'lsp-mode 
+(defvar lsp-language-id-configuration
+  '(...
+    (vue-mode . "vue")
+    ...))
+
+(lsp-register-client
+ (make-lsp-client :new-connection (lsp-stdio-connection "vue-semantic-server")
+                  :activation-fn (lsp-activate-on "vue")
+                  :server-id 'vue-semantic-server))
+(add-hook 'vue-mode-hook 'lsp)
+)
+
